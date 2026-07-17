@@ -153,8 +153,8 @@ The labelled cases live in `tests/evaluation_cases.py`, so vocabulary or scoring
 
 ### Vercel
 
-The repository includes `api/index.py` and `vercel.json`. Vercel deploys the
-Next.js interface and FastAPI together, with analysis available at
+The repository includes explicit `api/analyze.py` and `api/health.py` Python
+Functions. Vercel deploys them alongside the Next.js interface, with analysis at
 `/api/analyze`. No separate backend URL or environment variable is required.
 Static export is enabled only inside Docker; Vercel uses its normal server build
 so the Python Function is included.
@@ -245,7 +245,8 @@ Valid modes are `polarity` and `distress`. Text is required and limited to 5,000
 | `backend/engine.py` | Python NLP, offline transformer adapter, and distress screen |
 | `backend/main.py` | FastAPI routes, validation, security headers, and static serving |
 | `backend/run.py` | Environment-aware local/container server entry point |
-| `api/index.py` | Vercel Python Function entry point |
+| `api/analyze.py` | Stateless Vercel Python analysis function |
+| `api/health.py` | Vercel health-check function |
 | `tests/evaluation_cases.py` | Human-labelled 48-example smoke corpus |
 | `tests/test_engine.py` | Focused engine regression tests |
 | `tests/test_evaluation.py` | Whole-corpus assertions |
