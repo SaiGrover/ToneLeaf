@@ -156,6 +156,8 @@ The labelled cases live in `tests/evaluation_cases.py`, so vocabulary or scoring
 The repository includes `api/index.py` and `vercel.json`. Vercel deploys the
 Next.js interface and FastAPI together, with analysis available at
 `/api/analyze`. No separate backend URL or environment variable is required.
+Static export is enabled only inside Docker; Vercel uses its normal server build
+so the Python Function is included.
 
 1. Push the latest commit to the connected GitHub repository.
 2. Let Vercel redeploy the `main` branch.
@@ -203,6 +205,7 @@ Render or another container platform should terminate HTTPS before public traffi
 | `TONELEAF_PORT` | `8765` | Explicit API port override |
 | `PORT` | unset | Platform-assigned port fallback; Docker defaults to `8080` |
 | `TONELEAF_STATIC_DIR` | unset | Exported frontend directory served by FastAPI |
+| `TONELEAF_STATIC_EXPORT` | unset | Docker sets `1` to generate the static frontend |
 | `TONELEAF_TRUSTED_HOSTS` | `127.0.0.1,localhost` | Comma-separated allowed Host headers |
 | `TONELEAF_MODEL_PATH` | unset | Existing local transformer model directory |
 | `NEXT_PUBLIC_TONELEAF_API` | production: `/api` | Browser API base; `.env.development` selects local port `8765` |

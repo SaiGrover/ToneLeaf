@@ -8,6 +8,7 @@ COPY public ./public
 COPY styles.css ./
 COPY next.config.mjs ./
 ENV NEXT_PUBLIC_TONELEAF_API=same-origin
+ENV TONELEAF_STATIC_EXPORT=1
 RUN npm run build
 
 FROM python:3.12-slim AS runtime
