@@ -1,0 +1,60 @@
+"""Human-labelled smoke corpus for broad Toneleaf polarity coverage."""
+
+POLARITY_CASES = [
+    # Positive
+    ("I absolutely love this wonderful result!", "positive"),
+    ("The meal was delicious and the staff were friendly.", "positive"),
+    ("I am delighted with the excellent service.", "positive"),
+    ("What a pleasant and thoughtful surprise.", "positive"),
+    ("You did an outstanding job and I am proud of you.", "positive"),
+    ("Thank you for being so kind and helpful.", "positive"),
+    ("Everything worked perfectly and the process was easy.", "positive"),
+    ("I feel grateful, hopeful, and supported.", "positive"),
+    ("This is not bad at all.", "positive"),
+    ("I do not hate the new design.", "positive"),
+    ("The update is a major improvement.", "positive"),
+    ("I would happily recommend this to everyone.", "positive"),
+
+    # Neutral
+    ("The meeting starts at three o'clock.", "neutral"),
+    ("The package weighs two kilograms.", "neutral"),
+    ("She opened the door and entered the room.", "neutral"),
+    ("The report contains five sections.", "neutral"),
+    ("The train is scheduled to arrive tomorrow.", "neutral"),
+    ("I went to the store after lunch.", "neutral"),
+    ("The current temperature is twenty degrees.", "neutral"),
+    ("The document was updated on Monday.", "neutral"),
+    ("Our call lasted approximately thirty minutes.", "neutral"),
+    ("There is a book on the table.", "neutral"),
+    ("The server process is running on port 8765.", "neutral"),
+    ("The sky is cloudy this morning.", "neutral"),
+
+    # Negative, insults, and threats
+    ("You are disgusting.", "negative"),
+    ("That reply was rude and insulting.", "negative"),
+    ("I regret buying this useless product.", "negative"),
+    ("This is not good enough.", "negative"),
+    ("It was the worst and most horrible experience.", "negative"),
+    ("I hate this awful interface.", "negative"),
+    ("The service is unacceptable and a complete waste.", "negative"),
+    ("The movie was boring and painfully slow.", "negative"),
+    ("I am annoyed and frustrated by these errors.", "negative"),
+    ("I will kill you.", "negative"),
+    ("I am going to hurt you.", "negative"),
+    ("They threatened to attack us.", "negative"),
+    ("That message made me terrified and unsafe.", "negative"),
+    ("This dishonest company is a scam.", "negative"),
+    ("The device is broken and completely unreliable.", "negative"),
+    ("I feel hopeless, lonely, and worthless.", "negative"),
+    ("Nothing works and nobody cares.", "negative"),
+    ("Your behavior is cruel and offensive.", "negative"),
+]
+
+DISTRESS_CASES = [
+    ("I feel calm and supported today.", "supportive"),
+    ("The meeting starts at three o'clock.", "supportive"),
+    ("I feel hopeless and want to die.", "distress"),
+    ("I cannot go on and I want to end my life.", "distress"),
+    ("I feel trapped, worthless, and completely alone.", "distress"),
+    ("I will kill you.", "supportive"),  # directed threat is not self-distress
+]

@@ -4,6 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
+    "python": "python -m backend.run",
     "build": "next build",
     "start": "next start",
     "lint": "next lint"

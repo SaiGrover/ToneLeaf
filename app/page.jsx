@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { analyzeDistress, analyzePolarity } from "./lib/sentiment";
+import { analyzeLocally } from "./lib/api";
 
 const SOURCE_CONFIG = {
   text: ["TEXT", "Analyze your text", "Enter your text"],
@@ -80,13 +80,14 @@ export default function Home() {
   const [dark, setDark] = useState(false);
   const [toast, setToast] = useState("");
   const [recording, setRecording] = useState(false);
+  const [analyzing, setAnalyzing] = useState(false);
   const recognitionRef = useRef(null);
   const currentText = values[source].trim();
   const config = SOURCE_CONFIG[source];
 
   useEffect(() => {
     setDark(localStorage.getItem("toneleaf-theme") === "dark");
-    try { setHistory(JSON.parse(localStorage.getItem("toneleaf-history")) || []); } catch {}
+    localStorage.removeItem("toneleaf-history");
     if (location.hash === "#analyze") setStarted(true);
   }, []);
   useEffect(() => { document.body.classList.toggle("dark", dark); localStorage.setItem("toneleaf-theme", dark ? "dark" : "light"); }, [dark]);
@@ -98,17 +99,23 @@ export default function Home() {
   useEffect(() => { if (!toast) return; const timer = setTimeout(() => setToast(""), 2200); return () => clearTimeout(timer); }, [toast]);
 
   const changeValue = (key, value) => setValues((previous) => ({ ...previous, [key]: value.slice(0, 5000) }));
-  const analyze = useCallback((override) => {
+  const analyze = useCallback(async (override) => {
     const text = (override ?? values[source]).trim();
     if (!text) { setToast(source === "document" ? "Choose a text document first" : "Add some text first"); return; }
-    const analysis = mode === "polarity" ? analyzePolarity(text) : analyzeDistress(text);
-    const next = { ...analysis, mode, source, text, time: Date.now() };
-    setResult(next);
-    setHistory((previous) => {
-      const updated = [next, ...previous.filter((item) => item.text !== text || item.mode !== mode)].slice(0, 12);
-      localStorage.setItem("toneleaf-history", JSON.stringify(updated));
-      return updated;
-    });
+    setAnalyzing(true);
+    try {
+      const analysis = await analyzeLocally(text, mode);
+      const next = { ...analysis, mode, source, text, time: Date.now() };
+      setResult(next);
+      setHistory((previous) => {
+        const updated = [next, ...previous.filter((item) => item.text !== text || item.mode !== mode)].slice(0, 12);
+        return updated;
+      });
+    } catch {
+      setToast("Start the private Python service, then try again");
+    } finally {
+      setAnalyzing(false);
+    }
   }, [mode, source, values]);
 
   const readFile = async (selected) => {
@@ -139,15 +146,15 @@ export default function Home() {
   return <main className="workspace">
     <aside className="sidebar"><button onClick={goHome} className="brand-home" aria-label="Return home"><Brand compact /></button><nav className="source-nav" aria-label="Analysis source">{Object.keys(SOURCE_CONFIG).map((key) => <button aria-label={key === "document" ? "File" : title(key)} className={`nav-item ${source === key ? "active" : ""}`} onClick={() => { setSource(key); setResult(null); }} key={key}><span className="nav-icon"><SourceIcon type={key} /></span><span>{key === "document" ? "File" : title(key)}</span></button>)}</nav><button aria-label="Toggle color theme" className="theme-toggle" onClick={() => setDark((value) => !value)}><span className="theme-icon" aria-hidden="true">{dark ? "☀" : "☾"}</span><span>Theme</span></button></aside>
     <section className="content-area"><header className="topbar"><div><p className="breadcrumb">TONELEAF / <span>{config[0]}</span></p><h2>{config[1]}</h2></div><button className="history-button" onClick={() => setDrawer(true)}><span>↺</span> History <b>{history.length}</b></button></header>
-      <div className={`mode-switch ${mode === "depression" ? "depression" : ""}`} role="tablist"><button className={`mode ${mode === "polarity" ? "active" : ""}`} onClick={() => { setMode("polarity"); setResult(null); }}>Polarity</button><button className={`mode ${mode === "depression" ? "active" : ""}`} onClick={() => { setMode("depression"); setResult(null); }}>Distress check</button><span className="mode-indicator" /></div>
+      <div className={`mode-switch ${mode === "distress" ? "depression" : ""}`} role="tablist"><button className={`mode ${mode === "polarity" ? "active" : ""}`} onClick={() => { setMode("polarity"); setResult(null); }}>Polarity</button><button className={`mode ${mode === "distress" ? "active" : ""}`} onClick={() => { setMode("distress"); setResult(null); }}>Distress check</button><span className="mode-indicator" /></div>
       <div className="analysis-grid"><section className="input-panel panel"><div className="panel-heading"><div><span className="step">01</span><h3>{config[2]}</h3></div><span className="character-count"><b>{currentText.length}</b> / 5,000</span></div>
         {source === "text" && <div className="source-pane"><textarea maxLength={5000} value={values.text} onChange={(event) => changeValue("text", event.target.value)} placeholder="Type or paste something you want to understand…" /><div className="sample-row"><span>Try an example:</span>{Object.entries(SAMPLES).map(([label, sample]) => <button className="sample" key={label} onClick={() => { changeValue("text", sample); analyze(sample); }}>{label}</button>)}</div></div>}
         {source === "document" && <div className="source-pane"><label className="drop-zone" onDragOver={(event) => event.preventDefault()} onDrop={(event) => { event.preventDefault(); readFile(event.dataTransfer.files[0]); }}><span className="upload-icon">⇧</span><strong>Drop a text file here</strong><small>or click to browse · TXT, MD, CSV, JSON</small><input type="file" accept=".txt,.md,.csv,.json,text/plain,text/markdown,text/csv,application/json" onChange={(event) => readFile(event.target.files[0])} /></label>{file && <div className="file-card"><span className="file-icon">▤</span><div><strong>{file.name}</strong><small>{(file.size / 1024).toFixed(1)} KB · {values.document.length.toLocaleString()} characters</small></div><button onClick={() => { setFile(null); changeValue("document", ""); }}>×</button></div>}</div>}
-        {source === "voice" && <div className="source-pane"><div className="voice-box"><button className={`record-button ${recording ? "recording" : ""}`} onClick={startVoice}><span /></button><strong>{recording ? "Listening… tap to stop" : "Tap to start speaking"}</strong><small>Your browser will transcribe speech when supported.</small></div><textarea maxLength={5000} value={values.voice} onChange={(event) => changeValue("voice", event.target.value)} placeholder="Your transcript will appear here…" /></div>}
+        {source === "voice" && <div className="source-pane"><div className="voice-box"><button className={`record-button ${recording ? "recording" : ""}`} onClick={startVoice}><span /></button><strong>{recording ? "Listening… tap to stop" : "Tap to start speaking"}</strong><small>Speech may use your browser provider. For sensitive text, paste a local transcript.</small></div><textarea maxLength={5000} value={values.voice} onChange={(event) => changeValue("voice", event.target.value)} placeholder="Your transcript will appear here…" /></div>}
         {source === "social" && <div className="source-pane"><div className="social-note"><span>⌁</span><div><strong>Analyze a social post</strong><small>Paste the post text below. Private or restricted links cannot be read automatically.</small></div></div><textarea maxLength={5000} value={values.social} onChange={(event) => changeValue("social", event.target.value)} placeholder="Paste the post or comment text here…" /></div>}
-        <div className="input-footer"><p><span>i</span>{mode === "polarity" ? " Polarity scores reflect word choice and context cues." : " A screening signal, not a medical diagnosis."}</p><button className="analyze-button" onClick={() => analyze()}>{mode === "polarity" ? "Analyze sentiment" : "Check language"}<span>→</span></button></div></section><ResultPanel result={result} onCopy={copyResult} /></div>
-      <footer className="app-footer"><span>Private by design · No text leaves this page</span><span>Designed for quiet, thoughtful reflection</span></footer></section>
-    <aside className={`history-drawer ${drawer ? "open" : ""}`} aria-hidden={!drawer}><div className="drawer-head"><div><p>RECENT</p><h3>Analysis history</h3></div><button onClick={() => setDrawer(false)}>×</button></div><div className="history-list">{history.length ? history.map((item) => <div className="history-item" onClick={() => loadHistory(item)} key={`${item.time}-${item.text}`}><p>{item.text}</p><span>{item.source} · {item.mode === "depression" ? "distress check" : item.mode}<b>{item.confidence}% {item.mode === "polarity" ? getPolarityPresentation(item).label : item.label}</b></span></div>) : <p className="history-empty">Your recent analyses will appear here.</p>}</div><button className="clear-history" onClick={() => { localStorage.removeItem("toneleaf-history"); setHistory([]); setToast("History cleared"); }}>Clear history</button></aside><button className={`drawer-backdrop ${drawer ? "open" : ""}`} onClick={() => setDrawer(false)} aria-label="Close history" />
+        <div className="input-footer"><p><span>i</span>{mode === "polarity" ? " Polarity scores reflect word choice and context cues." : " A screening signal, not a medical diagnosis."}</p><button className="analyze-button" disabled={analyzing} onClick={() => analyze()}>{analyzing ? "Analyzing locally…" : mode === "polarity" ? "Analyze sentiment" : "Check language"}<span>→</span></button></div></section><ResultPanel result={result} onCopy={copyResult} /></div>
+      <footer className="app-footer"><span>Private by design · Processed by Python on this device</span><span>Designed for quiet, thoughtful reflection</span></footer></section>
+    <aside className={`history-drawer ${drawer ? "open" : ""}`} aria-hidden={!drawer}><div className="drawer-head"><div><p>RECENT</p><h3>Analysis history</h3></div><button onClick={() => setDrawer(false)}>×</button></div><div className="history-list">{history.length ? history.map((item) => <div className="history-item" onClick={() => loadHistory(item)} key={`${item.time}-${item.text}`}><p>{item.text}</p><span>{item.source} · {item.mode === "distress" ? "distress check" : item.mode}<b>{item.confidence}% {item.mode === "polarity" ? getPolarityPresentation(item).label : item.label}</b></span></div>) : <p className="history-empty">Your recent analyses will appear here.</p>}</div><button className="clear-history" onClick={() => { localStorage.removeItem("toneleaf-history"); setHistory([]); setToast("History cleared"); }}>Clear history</button></aside><button className={`drawer-backdrop ${drawer ? "open" : ""}`} onClick={() => setDrawer(false)} aria-label="Close history" />
     <div className={`toast ${toast ? "show" : ""}`} role="status">{toast}</div>
   </main>;
 }

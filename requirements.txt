@@ -1,0 +1,7 @@
+fastapi==0.116.1
+pydantic==2.11.7
+uvicorn==0.35.0
+
+# Optional deep-learning engine (only needed with a local model directory):
+# transformers==4.53.2
+# torch==2.7.1
