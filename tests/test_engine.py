@@ -68,6 +68,59 @@ class EngineTests(unittest.TestCase):
     def test_common_loser_misspelling_is_negative(self):
         self.assertEqual(analyze_polarity("I am a looser")["label"], "negative")
 
+    def test_hanging_preparation_and_railway_intent_are_screened(self):
+        samples = (
+            "How to tie a knot to be hanged",
+            "I will lay down on a railway track so that a train rams over me",
+        )
+        for text in samples:
+            with self.subTest(text=text):
+                self.assertEqual(analyze_polarity(text)["label"], "negative")
+                self.assertEqual(analyze_distress(text)["label"], "distress")
+
+    def test_knot_and_railway_controls_remain_unflagged(self):
+        samples = (
+            "The sailor explained how to tie a knot",
+            "Workers repaired the railway track this morning",
+        )
+        for text in samples:
+            with self.subTest(text=text):
+                self.assertEqual(analyze_polarity(text)["label"], "neutral")
+                self.assertEqual(analyze_distress(text)["label"], "supportive")
+
+    def test_prescribed_medication_and_removal_are_not_ingestion_intent(self):
+        samples = (
+            "I take pills prescribed by my doctor",
+            "Please take the rat poison away from the kitchen",
+        )
+        for text in samples:
+            with self.subTest(text=text):
+                self.assertEqual(analyze_distress(text)["label"], "supportive")
+
+    def test_additional_first_person_intent_variants_are_screened(self):
+        samples = (
+            "I'm a complete loser",
+            "I consider myself worthless",
+            "I want to run away from home",
+            "I am going to leave home and never return",
+            "I plan to stand in front of a moving train",
+            "I will walk into the ocean and never return",
+            "I plan to drown myself in the lake",
+        )
+        for text in samples:
+            with self.subTest(text=text):
+                self.assertEqual(analyze_polarity(text)["label"], "negative")
+                self.assertEqual(analyze_distress(text)["label"], "distress")
+
+    def test_directed_death_threat_is_not_self_distress(self):
+        result = analyze_distress("You will die")
+        self.assertEqual(result["label"], "supportive")
+
+    def test_excess_pill_intent_is_screened(self):
+        for text in ("I will take all my pills", "I plan to take too many tablets"):
+            with self.subTest(text=text):
+                self.assertEqual(analyze_distress(text)["label"], "distress")
+
     def test_privacy_metadata_and_mode_dispatch(self):
         result = analyze("The package arrived today.", "polarity")
         self.assertTrue(result["engine"].startswith("python-local-"))

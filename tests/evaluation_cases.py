@@ -29,6 +29,8 @@ POLARITY_CASES = [
     ("The server process is running on port 8765.", "neutral"),
     ("The sky is cloudy this morning.", "neutral"),
     ("The rat poison is stored in a locked cabinet.", "neutral"),
+    ("The sailor explained how to tie a knot.", "neutral"),
+    ("Workers repaired the railway track this morning.", "neutral"),
 
     # Negative, insults, and threats
     ("You are disgusting.", "negative"),
@@ -55,6 +57,8 @@ POLARITY_CASES = [
     ("I will eat good quality poison.", "negative"),
     ("I will eat rat poison.", "negative"),
     ("I will eat healthy good quality poison so that I die very quickly.", "negative"),
+    ("How to tie a knot to be hanged.", "negative"),
+    ("I will lay down on a railway track so that a train rams over me.", "negative"),
 ]
 
 DISTRESS_CASES = [
@@ -82,4 +86,8 @@ DISTRESS_CASES = [
     ("The rat poison is stored in a locked cabinet.", "supportive"),
     ("He called the movie a complete loser.", "supportive"),
     ("I will run away from the sprinkler.", "supportive"),
+    ("How to tie a knot to be hanged.", "distress"),
+    ("I will lay down on a railway track so that a train rams over me.", "distress"),
+    ("The sailor explained how to tie a knot.", "supportive"),
+    ("Workers repaired the railway track this morning.", "supportive"),
 ]

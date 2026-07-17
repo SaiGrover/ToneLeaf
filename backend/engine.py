@@ -72,7 +72,7 @@ DISTRESS_PATTERNS = {
     "kill myself": 6.0, "end my life": 6.0, "cannot go on": 5.0,
     "can't go on": 5.0, "suicidal": 5.0, "suicide": 5.0,
     "want to die": 5.0, "self harm": 5.0, "hurt myself": 5.0,
-    "kill me": 5.5, "hit myself": 4.5, "cut myself": 5.0,
+    "kill me": 5.5, "hit myself": 5.0, "cut myself": 5.0,
     "harm myself": 5.0, "shoot myself": 6.0, "stab myself": 6.0,
     "hang myself": 6.0, "throw myself": 5.0, "overdose": 5.0,
     "end it all": 5.0, "don't want to live": 5.0,
@@ -84,9 +84,9 @@ DISTRESS_PATTERNS = {
     "jump off a bridge": 5.5, "jump from the roof": 5.5,
     "jump off the roof": 5.5, "jump out of the window": 5.5,
     "jump out the window": 5.5,
-    "die": 4.0, "dying": 4.0, "give up": 3.0, "hopeless": 3.0,
+    "give up": 3.0, "hopeless": 3.0,
     "worthless": 3.0, "unbearable": 3.0, "trapped": 2.5,
-    "no reason": 2.5, "pointless": 2.5, "alone": 2.0,
+    "no reason": 2.5, "pointless": 3.0, "alone": 2.5,
     "lonely": 2.0, "empty": 2.0, "numb": 2.0, "exhausted": 1.5,
 }
 
@@ -96,7 +96,7 @@ DISTRESS_PATTERNS = {
 DISTRESS_REGEX_PATTERNS = (
     (
         re.compile(
-            r"\b(?:eat|drink|take|swallow|ingest|consume)\b"
+            r"\b(?:eat|drink|swallow|ingest|consume)\b"
             r"(?:\s+[a-z']+){0,5}\s+\b(?:rat\s+)?poison\b",
             re.IGNORECASE,
         ),
@@ -121,16 +121,19 @@ DISTRESS_REGEX_PATTERNS = (
     ),
     (
         re.compile(
-            r"\b(?:take|swallow)\b(?:\s+[a-z']+){0,4}\s+"
-            r"\b(?:pills|tablets)\b",
+            r"\b(?:take|swallow)\s+(?:"
+            r"(?:all|too\s+many|dozens\s+of)\s+(?:(?:my|the)\s+)?(?:pills|tablets)"
+            r"|(?:a\s+)?(?:bottle|handful)\s+of\s+(?:pills|tablets)"
+            r")\b",
             re.IGNORECASE,
         ),
         5.0,
     ),
     (
         re.compile(
-            r"\bi\s+(?:(?:am|feel|think\s+i\s+am)\s+)"
-            r"(?:a\s+)?(?:complete\s+)?(?:loser|looser|failure|worthless|useless)\b",
+            r"\bi(?:'m|\s+am|\s+feel(?:\s+like)?|\s+think\s+i\s+am)\s+"
+            r"(?:a\s+)?(?:(?:complete|total|worthless|useless)\s+){0,2}"
+            r"(?:loser|looser|failure|worthless|useless)\b",
             re.IGNORECASE,
         ),
         5.0,
@@ -138,7 +141,63 @@ DISTRESS_REGEX_PATTERNS = (
     (
         re.compile(
             r"\bi\s+(?:will|want\s+to|am\s+going\s+to|plan\s+to)\s+"
-            r"run\s+away\s+from\s+(?:my|the)\s+(?:family|home)\b",
+            r"run\s+away\s+from\s+(?:(?:my|the)\s+)?(?:family|home)\b",
+            re.IGNORECASE,
+        ),
+        5.0,
+    ),
+    (
+        re.compile(
+            r"\b(?:how\s+to|how\s+do\s+i|learn\s+to|show\s+me\s+how\s+to)\s+"
+            r"(?:tie|make)\s+(?:a\s+)?(?:noose|knot)\b(?:\s+[a-z']+){0,5}\s+"
+            r"\b(?:hang|hanged|hanging|strangle|strangled)\b",
+            re.IGNORECASE,
+        ),
+        6.0,
+    ),
+    (
+        re.compile(
+            r"\bi\s+(?:will|want\s+to|plan\s+to|am\s+going\s+to)\s+"
+            r"(?:lie|lay)(?:\s+down)?\s+on\s+(?:a|the)\s+"
+            r"(?:railway|railroad|train)\s+tracks?\b",
+            re.IGNORECASE,
+        ),
+        6.0,
+    ),
+    (
+        re.compile(
+            r"\bi\s+(?:will|want\s+to|plan\s+to|am\s+going\s+to)\s+"
+            r"(?:stand|wait)\s+(?:in\s+front\s+of\s+(?:a\s+)?(?:moving\s+)?train"
+            r"|on\s+(?:a|the)\s+(?:railway|railroad|train)\s+tracks?(?:\s+for\s+a\s+train)?)\b",
+            re.IGNORECASE,
+        ),
+        6.0,
+    ),
+    (
+        re.compile(
+            r"\bi\s+(?:will|want\s+to|plan\s+to|am\s+going\s+to)\s+"
+            r"(?:walk\s+into\s+(?:the\s+)?(?:ocean|sea|lake)\s+and\s+never\s+return"
+            r"|drown\s+myself(?:\s+in\s+(?:the\s+)?(?:ocean|sea|lake))?)\b",
+            re.IGNORECASE,
+        ),
+        6.0,
+    ),
+    (
+        re.compile(
+            r"\bi\s+(?:am\s+going\s+to|will|want\s+to|plan\s+to)\s+"
+            r"leave\s+home\s+and\s+never\s+return\b",
+            re.IGNORECASE,
+        ),
+        5.0,
+    ),
+    (
+        re.compile(r"\bi\s+consider\s+myself\s+(?:worthless|useless|a\s+failure)\b", re.IGNORECASE),
+        5.0,
+    ),
+    (
+        re.compile(
+            r"\bi\s+(?:will|want\s+to|plan\s+to|am\s+going\s+to|hope\s+to|wish\s+to)\s+"
+            r"(?:[a-z']+\s+){0,3}(?:die|be\s+dead)\b|\bi(?:'m|\s+am)\s+dying\b",
             re.IGNORECASE,
         ),
         5.0,
@@ -177,8 +236,18 @@ def _distress_hits(text: str) -> list[tuple[str, float]]:
     for pattern, weight in DISTRESS_REGEX_PATTERNS:
         for match in pattern.finditer(lower):
             cue = " ".join(match.group(0).split())
-            if any(existing in cue or cue in existing for existing, _ in hits):
-                continue
+            overlap_indexes = [
+                index
+                for index, (existing, _existing_weight) in enumerate(hits)
+                if existing in cue or cue in existing
+            ]
+            if overlap_indexes:
+                if max(hits[index][1] for index in overlap_indexes) >= weight:
+                    continue
+                hits = [
+                    hit for index, hit in enumerate(hits)
+                    if index not in overlap_indexes
+                ]
             hits.append((cue, weight))
     return hits
 
@@ -213,7 +282,7 @@ def _fallback_polarity(text: str) -> dict:
         if index and tokens[index - 1] in INTENSIFIERS:
             value *= 1.45
         if any(token in NEGATORS for token in tokens[max(0, index - 3):index]):
-            value *= -0.8
+            value *= -1.0
         if value > 0:
             positive += value
         else:
