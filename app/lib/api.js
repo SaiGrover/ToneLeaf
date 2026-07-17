@@ -1,7 +1,7 @@
 const configuredApi = process.env.NEXT_PUBLIC_TONELEAF_API;
 const LOCAL_API = configuredApi === "same-origin"
-  ? ""
-  : (configuredApi || "http://127.0.0.1:8765").replace(/\/$/, "");
+  ? "/api"
+  : (configuredApi || "/api").replace(/\/$/, "");
 
 export async function analyzeLocally(text, mode) {
   const response = await fetch(`${LOCAL_API}/analyze`, {

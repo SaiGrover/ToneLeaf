@@ -38,12 +38,14 @@ async def privacy_headers(request, call_next):
     return response
 
 
+@app.get("/api/health", include_in_schema=False)
 @app.get("/health", include_in_schema=False)
 def health(response: Response):
     response.headers["Cache-Control"] = "no-store"
     return {"status": "ok", "privacy": "local-memory-only"}
 
 
+@app.post("/api/analyze", response_model=AnalysisResponse)
 @app.post("/analyze", response_model=AnalysisResponse)
 def run_analysis(payload: AnalysisRequest):
     # The request text is neither logged nor persisted; it becomes unreachable

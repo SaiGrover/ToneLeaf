@@ -51,7 +51,8 @@ The default local development setup uses:
 - interface: `http://127.0.0.1:3000`
 - private Python API: `http://127.0.0.1:8765`
 
-The production container serves both from one origin on port `8080`.
+Production serves the browser and Python API from one origin. Vercel uses a
+Python Function under `/api`; the container serves both on port `8080`.
 
 ## Privacy modes
 
@@ -150,6 +151,21 @@ The labelled cases live in `tests/evaluation_cases.py`, so vocabulary or scoring
 
 ## Production deployment
 
+### Vercel
+
+The repository includes `api/index.py` and `vercel.json`. Vercel deploys the
+Next.js interface and FastAPI together, with analysis available at
+`/api/analyze`. No separate backend URL or environment variable is required.
+
+1. Push the latest commit to the connected GitHub repository.
+2. Let Vercel redeploy the `main` branch.
+3. Verify `/api/health` on the production domain.
+4. Force-refresh the website and run a sample analysis.
+
+Hosted text is processed transiently in Vercel Function memory. It is not sent
+to an external model API or stored by Toneleaf, but this is not the same privacy
+boundary as device-local mode.
+
 ### Docker
 
 Build and run the complete application:
@@ -189,7 +205,7 @@ Render or another container platform should terminate HTTPS before public traffi
 | `TONELEAF_STATIC_DIR` | unset | Exported frontend directory served by FastAPI |
 | `TONELEAF_TRUSTED_HOSTS` | `127.0.0.1,localhost` | Comma-separated allowed Host headers |
 | `TONELEAF_MODEL_PATH` | unset | Existing local transformer model directory |
-| `NEXT_PUBLIC_TONELEAF_API` | `http://127.0.0.1:8765` | Browser API base; production builds use `same-origin` |
+| `NEXT_PUBLIC_TONELEAF_API` | production: `/api` | Browser API base; `.env.development` selects local port `8765` |
 
 ## API
 
@@ -226,12 +242,14 @@ Valid modes are `polarity` and `distress`. Text is required and limited to 5,000
 | `backend/engine.py` | Python NLP, offline transformer adapter, and distress screen |
 | `backend/main.py` | FastAPI routes, validation, security headers, and static serving |
 | `backend/run.py` | Environment-aware local/container server entry point |
+| `api/index.py` | Vercel Python Function entry point |
 | `tests/evaluation_cases.py` | Human-labelled 48-example smoke corpus |
 | `tests/test_engine.py` | Focused engine regression tests |
 | `tests/test_evaluation.py` | Whole-corpus assertions |
 | `notebooks/Toneleaf_Sentiment_Analysis.ipynb` | Executed analysis and visualization notebook |
 | `Dockerfile` | Multi-stage single-container production build |
 | `render.yaml` | Render Blueprint configuration |
+| `vercel.json` | Vercel Python Function bundle configuration |
 | `PRIVACY.md` | Detailed privacy and threat-model documentation |
 
 ## Limitations and responsible use

@@ -7,6 +7,7 @@ __pycache__/
 .vercel/
 .env*
 !.env.example
+!.env.development
 npm-debug.log*
 pnpm-debug.log*
 work/
