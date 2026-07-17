@@ -15,7 +15,7 @@ The application can run entirely on one device or as a single stateless web cont
 - Text, local document, editable voice transcript, and pasted social-content workflows.
 - No persistent text history: recent analyses remain only in page-session memory.
 - One-container production build with the exported Next.js interface served by FastAPI.
-- An executed analysis notebook with tables, charts, and a 42-sentence polarity evaluation.
+- An executed analysis notebook with tables, charts, and a 49-sentence polarity evaluation.
 
 ## Verified behavior
 
@@ -23,9 +23,9 @@ Toneleaf includes a curated smoke corpus covering positive, neutral, negative, n
 
 | Evaluation | Result |
 | --- | ---: |
-| Polarity sentences | 42 / 42 |
-| Distress-screening sentences | 16 / 16 |
-| Total labelled examples | 58 / 58 |
+| Polarity sentences | 49 / 49 |
+| Distress-screening sentences | 24 / 24 |
+| Total labelled examples | 73 / 73 |
 
 These results are regression coverage for the included examples, not a claim of universal or population-level accuracy. Sarcasm, coded language, cultural nuance, and long conversational context can still produce incorrect results.
 
@@ -127,7 +127,7 @@ The executed notebook is available at [notebooks/Toneleaf_Sentiment_Analysis.ipy
 
 - representative positive, neutral, negative, insulting, threatening, and negated examples;
 - an explainable score table and stacked signal-share chart;
-- evaluation over 42 labelled polarity sentences;
+- evaluation over 49 labelled polarity sentences;
 - a confusion matrix and per-class summary;
 - separate distress-screening demonstrations;
 - responsible-use and privacy limitations.
@@ -247,7 +247,7 @@ Valid modes are `polarity` and `distress`. Text is required and limited to 5,000
 | `backend/run.py` | Environment-aware local/container server entry point |
 | `api/analyze.py` | Stateless Vercel Python analysis function |
 | `api/health.py` | Vercel health-check function |
-| `tests/evaluation_cases.py` | Human-labelled 58-example smoke corpus |
+| `tests/evaluation_cases.py` | Human-labelled 73-example smoke corpus |
 | `tests/test_engine.py` | Focused engine regression tests |
 | `tests/test_evaluation.py` | Whole-corpus assertions |
 | `notebooks/Toneleaf_Sentiment_Analysis.ipynb` | Executed analysis and visualization notebook |

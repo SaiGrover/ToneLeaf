@@ -28,6 +28,7 @@ POLARITY_CASES = [
     ("There is a book on the table.", "neutral"),
     ("The server process is running on port 8765.", "neutral"),
     ("The sky is cloudy this morning.", "neutral"),
+    ("The rat poison is stored in a locked cabinet.", "neutral"),
 
     # Negative, insults, and threats
     ("You are disgusting.", "negative"),
@@ -48,6 +49,12 @@ POLARITY_CASES = [
     ("I feel hopeless, lonely, and worthless.", "negative"),
     ("Nothing works and nobody cares.", "negative"),
     ("Your behavior is cruel and offensive.", "negative"),
+    ("I am a loser.", "negative"),
+    ("I am a looser.", "negative"),
+    ("I will jump from the building and die.", "negative"),
+    ("I will eat good quality poison.", "negative"),
+    ("I will eat rat poison.", "negative"),
+    ("I will eat healthy good quality poison so that I die very quickly.", "negative"),
 ]
 
 DISTRESS_CASES = [
@@ -67,4 +74,12 @@ DISTRESS_CASES = [
     ("I might overdose tonight.", "distress"),
     ("I want to cut myself.", "distress"),
     ("I will kill you.", "supportive"),  # directed threat is not self-distress
+    ("I will eat poison.", "distress"),
+    ("I will eat rat poison.", "distress"),
+    ("I will consume good quality poison so that I die.", "distress"),
+    ("I am a complete loser.", "distress"),
+    ("I will run away from my family.", "distress"),
+    ("The rat poison is stored in a locked cabinet.", "supportive"),
+    ("He called the movie a complete loser.", "supportive"),
+    ("I will run away from the sprinkler.", "supportive"),
 ]

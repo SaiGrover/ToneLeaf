@@ -50,6 +50,7 @@ NEGATIVE = {
     "cruel": -3.2, "offensive": -2.8, "toxic": -3.0, "abusive": -3.5,
     "disaster": -3.2, "disastrous": -3.2, "pathetic": -3.2,
     "ridiculous": -2.5, "incompetent": -3.0, "deceitful": -3.0,
+    "loser": -3.2, "looser": -3.2,
 }
 LEXICON = POSITIVE | NEGATIVE
 INTENSIFIERS = {"very", "really", "extremely", "absolutely", "so", "incredibly", "deeply", "totally"}
@@ -89,6 +90,61 @@ DISTRESS_PATTERNS = {
     "lonely": 2.0, "empty": 2.0, "numb": 2.0, "exhausted": 1.5,
 }
 
+# Contextual patterns require an action or first-person intent. This prevents a
+# method noun by itself (for example, stored rat poison) from being treated as
+# proof of distress.
+DISTRESS_REGEX_PATTERNS = (
+    (
+        re.compile(
+            r"\b(?:eat|drink|take|swallow|ingest|consume)\b"
+            r"(?:\s+[a-z']+){0,5}\s+\b(?:rat\s+)?poison\b",
+            re.IGNORECASE,
+        ),
+        6.0,
+    ),
+    (
+        re.compile(
+            r"\bjump(?:ing)?\s+(?:off|from|out\s+of)\b"
+            r"(?:\s+[a-z']+){0,4}\s+\b"
+            r"(?:building|bridge|roof|window|balcony|cliff)\b",
+            re.IGNORECASE,
+        ),
+        5.5,
+    ),
+    (
+        re.compile(
+            r"\b(?:hit|hurt|harm|cut|stab|shoot|burn|hang|strangle)\s+"
+            r"(?:myself|me)\b",
+            re.IGNORECASE,
+        ),
+        5.5,
+    ),
+    (
+        re.compile(
+            r"\b(?:take|swallow)\b(?:\s+[a-z']+){0,4}\s+"
+            r"\b(?:pills|tablets)\b",
+            re.IGNORECASE,
+        ),
+        5.0,
+    ),
+    (
+        re.compile(
+            r"\bi\s+(?:(?:am|feel|think\s+i\s+am)\s+)"
+            r"(?:a\s+)?(?:complete\s+)?(?:loser|looser|failure|worthless|useless)\b",
+            re.IGNORECASE,
+        ),
+        5.0,
+    ),
+    (
+        re.compile(
+            r"\bi\s+(?:will|want\s+to|am\s+going\s+to|plan\s+to)\s+"
+            r"run\s+away\s+from\s+(?:my|the)\s+(?:family|home)\b",
+            re.IGNORECASE,
+        ),
+        5.0,
+    ),
+)
+
 
 def _percentages(values: dict[str, float]) -> dict[str, int]:
     total = sum(values.values()) or 1.0
@@ -114,12 +170,28 @@ def _phrase_hits(text: str, patterns: dict[str, float]) -> list[tuple[str, float
     return hits
 
 
+def _distress_hits(text: str) -> list[tuple[str, float]]:
+    """Return de-duplicated exact and contextual distress cues."""
+    hits = _phrase_hits(text, DISTRESS_PATTERNS)
+    lower = text.lower().replace("â€™", "'")
+    for pattern, weight in DISTRESS_REGEX_PATTERNS:
+        for match in pattern.finditer(lower):
+            cue = " ".join(match.group(0).split())
+            if any(existing in cue or cue in existing for existing, _ in hits):
+                continue
+            hits.append((cue, weight))
+    return hits
+
+
 def _cue_words(text: str, limit: int = 5) -> list[str]:
     hits: dict[str, float] = {}
     for phrase, weight in _phrase_hits(text, THREAT_PATTERNS):
         hits[phrase] = weight
     for phrase, weight in _phrase_hits(text, NEGATIVE_PATTERNS):
         hits[phrase] = weight
+    for phrase, weight in _distress_hits(text):
+        if weight >= 5.0:
+            hits[phrase] = weight
     for token in _tokens(text):
         if token in LEXICON:
             hits[token] = max(abs(LEXICON[token]), hits.get(token, 0.0))
@@ -131,6 +203,9 @@ def _fallback_polarity(text: str) -> dict:
     positive = negative = 0.0
     negative += sum(weight for _, weight in _phrase_hits(text, THREAT_PATTERNS))
     negative += sum(weight for _, weight in _phrase_hits(text, NEGATIVE_PATTERNS))
+    # High-risk intent stays negative even when words like "good" or "healthy"
+    # would otherwise dominate a generic sentiment score.
+    negative += sum(weight * 1.5 for _, weight in _distress_hits(text) if weight >= 5.0)
     for index, word in enumerate(tokens):
         if word not in LEXICON:
             continue
@@ -179,6 +254,11 @@ def _local_transformer():
 
 
 def analyze_polarity(text: str) -> dict:
+    # Apply the safety-aware contextual layer consistently even when an optional
+    # local transformer has been configured.
+    if any(weight >= 5.0 for _, weight in _distress_hits(text)):
+        return _fallback_polarity(text)
+
     classifier = _local_transformer()
     if classifier is None:
         return _fallback_polarity(text)
@@ -207,15 +287,11 @@ def analyze_polarity(text: str) -> dict:
 
 
 def analyze_distress(text: str) -> dict:
-    lower = text.lower().replace("’", "'")
     weighted = 0.0
     cues = []
-    for phrase, weight in DISTRESS_PATTERNS.items():
-        pattern = rf"(?<!\w){re.escape(phrase)}(?!\w)"
-        matches = re.findall(pattern, lower)
-        if matches:
-            weighted += weight * min(len(matches), 2)
-            cues.append(phrase)
+    for phrase, weight in _distress_hits(text):
+        weighted += weight
+        cues.append(phrase)
     polarity = analyze_polarity(text)
     weighted += max(0, polarity["scores"]["negative"] - 35) / 20
     risk = min(96, round(5 + weighted * 9))

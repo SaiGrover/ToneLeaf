@@ -36,6 +36,38 @@ class EngineTests(unittest.TestCase):
         self.assertEqual(result["label"], "distress")
         self.assertIn("kill me", result["cues"])
 
+    def test_poison_ingestion_is_negative_and_distress(self):
+        samples = (
+            "I will eat poison",
+            "I will eat rat poison",
+            "I will eat healthy good quality poison so that I die very quickly",
+        )
+        for text in samples:
+            with self.subTest(text=text):
+                polarity = analyze_polarity(text)
+                distress = analyze_distress(text)
+                self.assertEqual(polarity["label"], "negative")
+                self.assertEqual(distress["label"], "distress")
+                self.assertGreaterEqual(distress["scores"]["distress"], 50)
+
+    def test_poison_storage_context_is_not_flagged(self):
+        text = "The rat poison is stored in a locked cabinet."
+        self.assertEqual(analyze_polarity(text)["label"], "neutral")
+        self.assertEqual(analyze_distress(text)["label"], "supportive")
+
+    def test_first_person_self_deprecation_and_runaway_intent_are_screened(self):
+        for text in ("I am a complete loser", "I will run away from my family"):
+            with self.subTest(text=text):
+                self.assertEqual(analyze_distress(text)["label"], "distress")
+
+    def test_context_controls_do_not_trigger_distress(self):
+        for text in ("He called the movie a complete loser", "I will run away from the sprinkler"):
+            with self.subTest(text=text):
+                self.assertEqual(analyze_distress(text)["label"], "supportive")
+
+    def test_common_loser_misspelling_is_negative(self):
+        self.assertEqual(analyze_polarity("I am a looser")["label"], "negative")
+
     def test_privacy_metadata_and_mode_dispatch(self):
         result = analyze("The package arrived today.", "polarity")
         self.assertTrue(result["engine"].startswith("python-local-"))
