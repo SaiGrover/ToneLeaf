@@ -53,8 +53,18 @@ POLARITY_CASES = [
 DISTRESS_CASES = [
     ("I feel calm and supported today.", "supportive"),
     ("The meeting starts at three o'clock.", "supportive"),
+    ("I will jump on the trampoline tomorrow.", "supportive"),
+    ("The building has twenty floors.", "supportive"),
     ("I feel hopeless and want to die.", "distress"),
     ("I cannot go on and I want to end my life.", "distress"),
     ("I feel trapped, worthless, and completely alone.", "distress"),
+    ("I will jump from the building and hit myself.", "distress"),
+    ("Hello kill me.", "distress"),
+    ("I want to jump off a bridge.", "distress"),
+    ("I have been thinking I should hurt myself.", "distress"),
+    ("I do not want to live anymore.", "distress"),
+    ("I think I would be better off dead.", "distress"),
+    ("I might overdose tonight.", "distress"),
+    ("I want to cut myself.", "distress"),
     ("I will kill you.", "supportive"),  # directed threat is not self-distress
 ]

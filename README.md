@@ -24,8 +24,8 @@ Toneleaf includes a curated smoke corpus covering positive, neutral, negative, n
 | Evaluation | Result |
 | --- | ---: |
 | Polarity sentences | 42 / 42 |
-| Distress-screening sentences | 6 / 6 |
-| Total labelled examples | 48 / 48 |
+| Distress-screening sentences | 16 / 16 |
+| Total labelled examples | 58 / 58 |
 
 These results are regression coverage for the included examples, not a claim of universal or population-level accuracy. Sarcasm, coded language, cultural nuance, and long conversational context can still produce incorrect results.
 
@@ -247,7 +247,7 @@ Valid modes are `polarity` and `distress`. Text is required and limited to 5,000
 | `backend/run.py` | Environment-aware local/container server entry point |
 | `api/analyze.py` | Stateless Vercel Python analysis function |
 | `api/health.py` | Vercel health-check function |
-| `tests/evaluation_cases.py` | Human-labelled 48-example smoke corpus |
+| `tests/evaluation_cases.py` | Human-labelled 58-example smoke corpus |
 | `tests/test_engine.py` | Focused engine regression tests |
 | `tests/test_evaluation.py` | Whole-corpus assertions |
 | `notebooks/Toneleaf_Sentiment_Analysis.ipynb` | Executed analysis and visualization notebook |

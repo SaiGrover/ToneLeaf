@@ -24,6 +24,18 @@ class EngineTests(unittest.TestCase):
         self.assertEqual(result["label"], "distress")
         self.assertIn("want to die", result["cues"])
 
+    def test_jump_and_self_harm_language_is_screened(self):
+        result = analyze_distress("I will jump from the building and hit myself")
+        self.assertEqual(result["label"], "distress")
+        self.assertGreaterEqual(result["scores"]["distress"], 80)
+        self.assertIn("jump from the building", result["cues"])
+        self.assertIn("hit myself", result["cues"])
+
+    def test_kill_me_language_is_screened(self):
+        result = analyze_distress("Hello kill me")
+        self.assertEqual(result["label"], "distress")
+        self.assertIn("kill me", result["cues"])
+
     def test_privacy_metadata_and_mode_dispatch(self):
         result = analyze("The package arrived today.", "polarity")
         self.assertTrue(result["engine"].startswith("python-local-"))
