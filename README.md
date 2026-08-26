@@ -283,6 +283,3 @@ Valid modes are `polarity` and `distress`. Text is required and limited to 5,000
 
 **Saanvi Grover**
 
-## License
-
-Licensed under the [Apache License 2.0](LICENSE).
